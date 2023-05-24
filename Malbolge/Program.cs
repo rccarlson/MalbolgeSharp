@@ -1,5 +1,5 @@
 ﻿using Malbolge;
-void PrintQueue(Queue<char> queue) { while (queue.TryDequeue(out var output)) { Console.Write(output); } }
+void PrintQueue(Queue<char> queue) { while (queue.TryDequeue(out var output)) { Console.Write(output); } Console.WriteLine(); }
 void PopulateQueue(Queue<char> queue, string str) { foreach (var c in str) queue.Enqueue(c); }
 
 
