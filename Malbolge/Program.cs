@@ -26,5 +26,11 @@ var machine1 = new VirtualMachine(MalbolgeFlavor.Implementation, helloWorldProgr
 machine1.Execute();
 Console.WriteLine();
 PrintQueue(machine1.OutputQueue);
+
+var helloWorldProgram2 = """
+(=<`#9]~6ZY327Uv4-QsqpMn&+Ij"'E%e{Ab~w=_:]Kw%o44Uqp0/Q?xNvL:`H%c#DD2^WV>gY;dts76qKJImZkj
+""";
+var machine2 = new VirtualMachine(MalbolgeFlavor.Specification, helloWorldProgram2);
+machine2.Execute();
 Console.WriteLine();
 PrintQueue(machine2.OutputQueue);
