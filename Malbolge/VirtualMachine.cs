@@ -74,7 +74,7 @@ public class VirtualMachine
 						};
 					}
 					break;
-				case 39: memory[d].Rotr(); a = memory[d]; break; // rotr [d]
+				case 39: a = memory[d].Rotr(); break; // rotr [d]
 				case 40: d = memory[d]; break; // mov d, [d]
 				case 62: a = memory[d] = Word.TritwiseOp(a, memory[d]); break; // crz
 				case 68: /* nop */ break;

@@ -23,11 +23,19 @@ public class Word
 		data = trits.Select(ToTrit).ToArray();
 	}
 
-	public void Rotr()
+	public Word Rotr()
 	{
 		var temp = data[0..(WordSize-1)];
 		data[0] = data[WordSize - 1];
 		Array.Copy(temp, 0, data, 1, WordSize - 1);
+		return this;
+	}
+	public Word Rotl()
+	{
+		var temp = data[1..WordSize];
+		data[WordSize - 1] = data[0];
+		Array.Copy(temp, 0, data, 0, WordSize - 1);
+		return this;
 	}
 
 	public int Value
