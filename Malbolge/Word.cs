@@ -19,6 +19,7 @@ public class Word
 	}
 	public Word(int[] trits)
 	{
+		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
 		data = trits.Select(ToTrit).ToArray();
 	}
 
@@ -35,7 +36,7 @@ public class Word
 		{
 			int cumulative = 0;
 
-			for(int i = 0; i < 10; i++)
+			for(int i = 0; i < WordSize; i++)
 			{
 				var idx = WordSize - 1 - i;
 				cumulative += (int)Math.Pow(3, i) * (int)data[idx];
@@ -45,7 +46,7 @@ public class Word
 		set
 		{
 			var cumulative = value;
-			for(int i = 0; i < 10; i++)
+			for(int i = 0; i < WordSize; i++)
 			{
 				var idx = WordSize - 1 - i;
 				var remainder = cumulative % 3;
