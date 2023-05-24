@@ -15,8 +15,9 @@ public class VirtualMachine
 {
 	private const int MemorySize = 59049;
 
-	public VirtualMachine(string program)
+	public VirtualMachine(MalbolgeFlavor flavor, string program)
 	{
+		this.Flavor = flavor;
 		var programAsMemory = program.Where(c => !char.IsWhiteSpace(c)).Select(c => new Word(c)).ToArray();
 		Array.Copy(programAsMemory, memory, programAsMemory.Length);
 		for (int i = programAsMemory.Length; i < MemorySize; i++)
@@ -37,6 +38,9 @@ public class VirtualMachine
 
 	public Queue<char> InputQueue { get; } = new Queue<char>();
 	public Queue<char> OutputQueue { get; } = new Queue<char>();
+
+	public MalbolgeFlavor Flavor { get; }
+
 	public void Execute()
 	{
 		Dictionary<int, int> hitcount = new();
@@ -51,10 +55,12 @@ public class VirtualMachine
 			{
 				case 4: c = memory[d]; break; // jmp [d]
 
-				// in the spec, this is SUPPOSED to be 5, but the spec is a lie
-				case 23: OutputQueue.Enqueue((char)a); break; // out a
-				// in the spec, this is SUPPOSED to be 23, but the spec is a lie
-				case 5:
+				case 5 when Flavor is MalbolgeFlavor.Specification:
+				case 23 when Flavor is MalbolgeFlavor.Implementation:
+					OutputQueue.Enqueue((char)(a % 256)); break; // out a
+
+				case 5 when Flavor is MalbolgeFlavor.Implementation:
+				case 23 when Flavor is MalbolgeFlavor.Specification:
 					if (!InputQueue.TryDequeue(out char result))
 					{
 						a = new Word(new[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 }); // 59048
@@ -80,4 +86,10 @@ public class VirtualMachine
 			if(i%1 == 0) Console.Write($"\riter: {i,-12} hash: {HashMemory(),-12}");
 		}
 	}
+}
+
+public enum MalbolgeFlavor
+{
+	Specification,
+	Implementation
 }

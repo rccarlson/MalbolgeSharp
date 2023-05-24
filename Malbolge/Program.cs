@@ -22,8 +22,9 @@ $">~}|{zy7654ts10/o-,+lj(hgfedc!
 <;{j87x543sb0/.-,+*)('&%$#"!b`O{
 zyxZIutsrqSBQ@lkjihgIIdcba`B1j
 """;
-var machine = new VirtualMachine(helloWorldProgram);
-PopulateQueue(machine.InputQueue, "Hi");
-machine.Execute();
+var machine1 = new VirtualMachine(MalbolgeFlavor.Implementation, helloWorldProgram);
+machine1.Execute();
 Console.WriteLine();
-PrintQueue(machine.OutputQueue);
+PrintQueue(machine1.OutputQueue);
+Console.WriteLine();
+PrintQueue(machine2.OutputQueue);
