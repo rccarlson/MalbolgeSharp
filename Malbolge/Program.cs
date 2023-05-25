@@ -1,6 +1,14 @@
 ﻿using Malbolge;
-void PrintQueue(Queue<char> queue) { while (queue.TryDequeue(out var output)) { Console.Write(output); } Console.WriteLine(); }
-void PopulateQueue(Queue<char> queue, string str) { foreach (var c in str) queue.Enqueue(c); }
+static void PrintQueue(Queue<char> queue) { while (queue.TryDequeue(out var output)) { Console.Write(output); } Console.WriteLine(); }
+static void PopulateQueue(Queue<char> queue, string str) { foreach (var c in str) queue.Enqueue(c); }
+static string SimpleExecute(MalbolgeFlavor flavor, string program)
+{
+	var vm = new VirtualMachine(flavor, program);
+	vm.Execute();
+	var result = new string(vm.OutputQueue.ToArray());
+	Console.WriteLine(result);
+	return result;
+}
 
 
 var a = new Word(256);
@@ -21,16 +29,10 @@ $">~}|{zy7654ts10/o-,+lj(hgfedc!
 /[ZYXWVUTSRQPONM0K-zHGFEDCBA@?>=
 <;{j87x543sb0/.-,+*)('&%$#"!b`O{
 zyxZIutsrqSBQ@lkjihgIIdcba`B1j
-""";
-var machine1 = new VirtualMachine(MalbolgeFlavor.Implementation, helloWorldProgram);
-machine1.Execute();
-Console.WriteLine();
-PrintQueue(machine1.OutputQueue);
+"""; // http://www2.latech.edu/~acm/helloworld/malbolge.html
+SimpleExecute(MalbolgeFlavor.Implementation, helloWorldProgram);
 
 var helloWorldProgram2 = """
 (=<`#9]~6ZY327Uv4-QsqpMn&+Ij"'E%e{Ab~w=_:]Kw%o44Uqp0/Q?xNvL:`H%c#DD2^WV>gY;dts76qKJImZkj
-""";
-var machine2 = new VirtualMachine(MalbolgeFlavor.Specification, helloWorldProgram2);
-machine2.Execute();
-Console.WriteLine();
-PrintQueue(machine2.OutputQueue);
+"""; // https://gist.github.com/kspalaiologos/a1fe6913aaff8edea515b4af385368fe
+SimpleExecute(MalbolgeFlavor.Specification, helloWorldProgram2);

@@ -5,12 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Malbolge;
-/// <summary>
-/// 
-/// </summary>
-/// <remarks>
-/// Based on http://www.lscheffer.com/malbolge_spec.html
-/// </remarks>
+
 public class VirtualMachine
 {
 	private const int MemorySize = 59049;
@@ -18,6 +13,7 @@ public class VirtualMachine
 	public VirtualMachine(MalbolgeFlavor flavor, string program)
 	{
 		this.Flavor = flavor;
+		this.InitialProgram = program;
 		var programAsMemory = program.Where(c => !char.IsWhiteSpace(c)).Select(c => new Word(c)).ToArray();
 		Array.Copy(programAsMemory, memory, programAsMemory.Length);
 		for (int i = programAsMemory.Length; i < MemorySize; i++)
@@ -26,6 +22,7 @@ public class VirtualMachine
 		}
 	}
 
+	public readonly string InitialProgram;
 	private readonly Word[] memory = new Word[MemorySize];
 	public int HashMemory() => memory.Aggregate(0, (state, word) => HashCode.Combine(state, word.Value));
 
@@ -40,11 +37,15 @@ public class VirtualMachine
 	public Queue<char> OutputQueue { get; } = new Queue<char>();
 
 	public MalbolgeFlavor Flavor { get; }
+	public int MaxIterations { get; set; } = -1;
 
-	public void Execute()
-	{
 		Dictionary<int, int> hitcount = new();
-		for(int i=0; ; i++)
+	int iteration = 0;
+
+	/// <summary>
+	/// Returns true while the program can continue
+	/// </summary>
+	public bool ExecuteSingle()
 		{
 			var instructionValue = (memory[c] + c) % 94;
 
@@ -78,14 +79,56 @@ public class VirtualMachine
 				case 40: d = memory[d]; break; // mov d, [d]
 				case 62: a = memory[d] = Word.TritwiseOp(a, memory[d]); break; // crz
 				case 68: /* nop */ break;
-				case 81: return; // end
-				default: /* nop iff not the first instruction */ if (i == 0) return; break;
+			case 81: return false; // end
+			default: /* nop iff not the first instruction */ if (iteration == 0) return false; break;
 			}
 			c = (c.Value + 1) % MemorySize;
 			d = (d.Value + 1) % MemorySize;
-			if(i%1 == 0) Console.Write($"\riter: {i,-12} hash: {HashMemory(),-12}");
-		}
+		iteration++;
+		return true;
 	}
+
+	public ExecutionReport Execute()
+	{
+		for(int i=0; MaxIterations < 0 || iteration < MaxIterations; i++)
+		{
+			var single = ExecuteSingle();
+			if (!single)
+			{
+				return new ExecutionReport(this)
+				{
+					RanToCompletion = true,
+					Iterations = iteration,
+				};
+			}
+			//if (i % 1 == 0)
+			//{
+			//	var memHash = HashMemory();
+			//	var output =
+			//		 new string(OutputQueue.ToArray()).ReplaceLineEndings().Replace(Environment.NewLine, @"\n");
+			//	//"[REMOVED]";
+			//	Console.Write($"\riter: {i,-8} memory hash: {HashMemory(),-12} output: {output}");
+			//}
+		}
+		return new ExecutionReport(this)
+		{
+			RanToCompletion = false,
+			Iterations = iteration,
+		};
+	}
+		}
+
+public struct ExecutionReport
+{
+	public ExecutionReport(VirtualMachine vm)
+	{
+		Result = new string(vm.OutputQueue.ToArray());
+		Program = vm.InitialProgram;
+	}
+	public bool RanToCompletion;
+	public int Iterations;
+	public string Result;
+	public string Program;
 }
 
 public enum MalbolgeFlavor
