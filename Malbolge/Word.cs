@@ -52,12 +52,29 @@ public struct Word
 	{
 		get
 		{
+			/// Raise 3 to the specified power
+			static int Pow3(int power) =>
+				power switch
+				{
+					0 => 1,
+					1 => 3,
+					2 => 9,
+					3 => 27,
+					4 => 81,
+					5 => 243,
+					6 => 729,
+					7 => 2187,
+					8 => 6561,
+					9 => 19683,
+					_ => Pow3(9) * Pow3(power - 9)
+				};
+
 			int cumulative = 0;
 
 			for(int i = 0; i < WordSize; i++)
 			{
 				var idx = WordSize - 1 - i;
-				cumulative += (int)Math.Pow(3, i) * (int)Data[idx];
+				cumulative += Pow3(i) * (int)Data[idx];
 			}
 			return cumulative;
 		}
