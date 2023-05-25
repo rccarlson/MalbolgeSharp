@@ -25,7 +25,8 @@ public class VirtualMachine
 			}
 			var a = memory[i - 2];
 			var d = memory[i - 1];
-			memory[i] = new Word(Word.TritwiseOp(a, d));
+			var trits = Word.TritwiseOp(a, d);
+			memory[i] = new Word(trits);
 		}
 	}
 
