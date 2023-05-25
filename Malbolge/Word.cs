@@ -77,27 +77,27 @@ public class Word
 		{
 			0 => a switch
 			{
-					0 => 1,
-					1 => 0,
-					2 => 0,
-					_ => throw new NotImplementedException(a.ToString())
-				},
+				0 => 1,
+				1 => 0,
+				2 => 0,
+				_ => throw new NotImplementedException(a.ToString())
+			},
 			1 => a switch
 			{
-					0 => 1,
-					1 => 0,
-					2 => 2,
-					_ => throw new NotImplementedException(a.ToString())
-				},
+				0 => 1,
+				1 => 0,
+				2 => 2,
+				_ => throw new NotImplementedException(a.ToString())
+			},
 			2 => a switch
 			{
-					0 => 2,
-					1 => 2,
-					2 => 1,
-					_ => throw new NotImplementedException(a.ToString())
-				},
+				0 => 2,
+				1 => 2,
+				2 => 1,
 				_ => throw new NotImplementedException(a.ToString())
-			};
+			},
+			_ => throw new NotImplementedException(a.ToString())
+		};
 	}
 	public static Word TritwiseOp(Word a, Word d)
 	{

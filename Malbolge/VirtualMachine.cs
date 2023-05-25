@@ -22,11 +22,11 @@ public class VirtualMachine
 			{
 				memory[i] = 0;
 				continue;
-		}
+			}
 			var a = memory[i - 2];
 			var d = memory[i - 1];
 			memory[i] = Word.TritwiseOp(a, d);
-	}
+		}
 	}
 
 	public readonly string InitialProgram;
@@ -48,51 +48,51 @@ public class VirtualMachine
 	public MalbolgeFlavor Flavor { get; }
 	public int MaxIterations { get; set; } = -1;
 
-		Dictionary<int, int> hitcount = new();
+	Dictionary<int, int> hitcount = new();
 	int iteration = 0;
 
 	/// <summary>
 	/// Returns true while the program can continue
 	/// </summary>
 	public bool ExecuteSingle()
-		{
-			var instructionValue = (memory[c] + c) % 94;
+	{
+		var instructionValue = (memory[c] + c) % 94;
 
 		if (hitcount.TryGetValue(instructionValue, out int hits)) hitcount[instructionValue] = hits + 1;
-			else hitcount[instructionValue] = 1;
+		else hitcount[instructionValue] = 1;
 
 		switch (instructionValue)
-			{
+		{
 			case 4: c = memory[d]; MemoryReads++; break; // jmp [d]
 
-				case 5 when Flavor is MalbolgeFlavor.Specification:
-				case 23 when Flavor is MalbolgeFlavor.Implementation:
-					OutputQueue.Enqueue((char)(a % 256)); break; // out a
+			case 5 when Flavor is MalbolgeFlavor.Specification:
+			case 23 when Flavor is MalbolgeFlavor.Implementation:
+				OutputQueue.Enqueue((char)(a % 256)); break; // out a
 
-				case 5 when Flavor is MalbolgeFlavor.Implementation:
-				case 23 when Flavor is MalbolgeFlavor.Specification:
-					if (!InputQueue.TryDequeue(out char result))
-					{
+			case 5 when Flavor is MalbolgeFlavor.Implementation:
+			case 23 when Flavor is MalbolgeFlavor.Specification:
+				if (!InputQueue.TryDequeue(out char result))
+				{
 					a = Word.MaxValue; // 59048
-					}
-					else
+				}
+				else
+				{
+					a = result switch
 					{
-						a = result switch
-						{
-							'\r' or '\n' => 10,
-							_ => result
-						};
-					}
-					break;
+						'\r' or '\n' => 10,
+						_ => result
+					};
+				}
+				break;
 			case 39: a = memory[d].Rotr(); MemoryReads++; break; // rotr [d]
 			case 40: d = memory[d]; MemoryReads++; break; // mov d, [d]
 			case 62: a = memory[d] = Word.TritwiseOp(a, memory[d]); MemoryReads++; MemoryWrites++; break; // crz
-				case 68: /* nop */ break;
+			case 68: /* nop */ break;
 			case 81: return false; // end
 			default: /* nop iff not the first instruction */ if (iteration == 0) return false; break;
-			}
-			c = (c.Value + 1) % MemorySize;
-			d = (d.Value + 1) % MemorySize;
+		}
+		c = (c.Value + 1) % MemorySize;
+		d = (d.Value + 1) % MemorySize;
 		iteration++;
 		return true;
 	}
@@ -125,7 +125,7 @@ public class VirtualMachine
 			Iterations = iteration,
 		};
 	}
-		}
+}
 
 public struct ExecutionReport
 {
