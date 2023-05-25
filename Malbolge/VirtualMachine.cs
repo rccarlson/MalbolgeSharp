@@ -73,7 +73,7 @@ public class VirtualMachine
 				case 23 when Flavor is MalbolgeFlavor.Specification:
 					if (!InputQueue.TryDequeue(out char result))
 					{
-						a = new Word(new[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 }); // 59048
+					a = Word.MaxValue; // 59048
 					}
 					else
 					{

@@ -10,7 +10,7 @@ namespace Malbolge;
 [DebuggerDisplay("{Value, nq}")]
 public class Word
 {
-	public const int MaxValue = 59049;
+	public static Word MaxValue => new Word(new[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 });
 	private const int WordSize = 10;
 	public Word(char c): this((int)c) { }
 	public Word(int i)
