@@ -121,7 +121,20 @@ public struct Word
 		return data;
 	}
 
-	public static Word operator +(Word left, Word right) => new Word(left.Value + right.Value);
+	public static Word operator +(Word left, Word right)
+	{
+		int carry = 0;
+		var newData = new Trit[WordSize];
+		for (int i = 0; i < WordSize; i++)
+		{
+			var idx = WordSize - 1 - i;
+			var sum = (int)left.Data[idx] + (int)right.Data[idx] + carry;
+			newData[idx] = (Trit)(sum % 3);
+			carry = sum / 3;
+		}
+		var result = new Word(newData);
+		return result;
+	}
 	public static Word operator -(Word left, Word right) => new Word(left.Value - right.Value);
 	public static Word operator *(Word left, Word right) => new Word(left.Value * right.Value);
 	public static Word operator /(Word left, Word right) => new Word(left.Value / right.Value);
