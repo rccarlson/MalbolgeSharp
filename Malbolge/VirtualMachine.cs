@@ -16,17 +16,29 @@ public class VirtualMachine
 		this.InitialProgram = program;
 		var programAsMemory = program.Where(c => !char.IsWhiteSpace(c)).Select(c => new Word(c)).ToArray();
 		Array.Copy(programAsMemory, memory, programAsMemory.Length);
-		for (int i = programAsMemory.Length; i < MemorySize; i++)
+		var progLen = programAsMemory.Length;
+
+		var first = memory[progLen - 2];
+		var second = memory[progLen - 1];
+		var third = new Word(Word.TritwiseOp(first, second));
+		var fourth = new Word(Word.TritwiseOp(second, third));
+		var wordSeq = new List<Word>() { third, fourth };
+
+		while (wordSeq.Count < 2 || (
+			first != wordSeq[^2] &&
+			second != wordSeq[^1]
+			))
 		{
-			if (i < 2)
-			{
-				memory[i] = 0;
-				continue;
-			}
-			var a = memory[i - 2];
-			var d = memory[i - 1];
-			var trits = Word.TritwiseOp(a, d);
-			memory[i] = new Word(trits);
+			var newTrits = Word.TritwiseOp(wordSeq[^2], wordSeq[^1]);
+			var newWord = new Word(newTrits);
+			wordSeq.Add(newWord);
+		}
+		var wordSeqArr = wordSeq.ToArray();
+
+		for (int i = progLen; i < memory.Length; i += wordSeqArr.Length)
+		{
+			var copySize = Math.Min(wordSeqArr.Length, MemorySize - i);
+			Array.Copy(wordSeqArr, 0, memory, i, copySize);
 		}
 	}
 
