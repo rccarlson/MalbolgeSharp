@@ -42,6 +42,8 @@ public class VirtualMachine
 
 	public Queue<char> InputQueue { get; } = new Queue<char>();
 	public Queue<char> OutputQueue { get; } = new Queue<char>();
+	public int MemoryReads { get; private set; } = 0;
+	public int MemoryWrites { get; private set; } = 0;
 
 	public MalbolgeFlavor Flavor { get; }
 	public int MaxIterations { get; set; } = -1;
@@ -61,7 +63,7 @@ public class VirtualMachine
 
 			switch(instructionValue)
 			{
-				case 4: c = memory[d]; break; // jmp [d]
+			case 4: c = memory[d]; MemoryReads++; break; // jmp [d]
 
 				case 5 when Flavor is MalbolgeFlavor.Specification:
 				case 23 when Flavor is MalbolgeFlavor.Implementation:
@@ -82,9 +84,9 @@ public class VirtualMachine
 						};
 					}
 					break;
-				case 39: a = memory[d].Rotr(); break; // rotr [d]
-				case 40: d = memory[d]; break; // mov d, [d]
-				case 62: a = memory[d] = Word.TritwiseOp(a, memory[d]); break; // crz
+			case 39: a = memory[d].Rotr(); MemoryReads++; break; // rotr [d]
+			case 40: d = memory[d]; MemoryReads++; break; // mov d, [d]
+			case 62: a = memory[d] = Word.TritwiseOp(a, memory[d]); MemoryReads++; MemoryWrites++; break; // crz
 				case 68: /* nop */ break;
 			case 81: return false; // end
 			default: /* nop iff not the first instruction */ if (iteration == 0) return false; break;
@@ -131,11 +133,14 @@ public struct ExecutionReport
 	{
 		Result = new string(vm.OutputQueue.ToArray());
 		Program = vm.InitialProgram;
+		MemoryReads = vm.MemoryReads;
+		MemoryWrites = vm.MemoryWrites;
 	}
 	public bool RanToCompletion;
 	public int Iterations;
 	public string Result;
 	public string Program;
+	public int MemoryReads, MemoryWrites;
 }
 
 public enum MalbolgeFlavor
