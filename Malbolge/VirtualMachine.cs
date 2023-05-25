@@ -18,8 +18,15 @@ public class VirtualMachine
 		Array.Copy(programAsMemory, memory, programAsMemory.Length);
 		for (int i = programAsMemory.Length; i < MemorySize; i++)
 		{
-			memory[i] = Word.TritwiseOp(memory[i-2], memory[i-1]);
+			if (i < 2)
+			{
+				memory[i] = 0;
+				continue;
 		}
+			var a = memory[i - 2];
+			var d = memory[i - 1];
+			memory[i] = Word.TritwiseOp(a, d);
+	}
 	}
 
 	public readonly string InitialProgram;
