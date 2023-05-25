@@ -15,12 +15,17 @@ public class Word
 	public Word(char c): this((int)c) { }
 	public Word(int i)
 	{
+		data = new Trit[WordSize];
 		Value = i;
 	}
 	public Word(int[] trits)
 	{
 		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
-		data = trits.Select(ToTrit).ToArray();
+		data = new Trit[WordSize];
+		for(int i = 0; i< WordSize; i++)
+		{
+			data[i] = (Trit)trits[i];
+		}
 	}
 
 	public Word Rotr()
@@ -58,13 +63,13 @@ public class Word
 			{
 				var idx = WordSize - 1 - i;
 				var remainder = cumulative % 3;
-				data[idx] = ToTrit(remainder);
+				data[idx] = (Trit)remainder;
 				cumulative /= 3;
 			}
 		}
 	}
 
-	private Trit[] data = new Trit[WordSize];
+	private readonly Trit[] data;
 
 	private static int Crazy(int a, int d)
 	{
@@ -113,16 +118,5 @@ public class Word
 
 	public static implicit operator int(Word word) => word.Value;
 	public static implicit operator Word(int value) => new Word(value);
-
-	private static Trit ToTrit(int i)
-	{
-		return i switch
-		{
-			0 => Trit.Zero,
-			1 => Trit.One,
-			2 => Trit.Two,
-			_ => throw new NotImplementedException(i.ToString())
-		};
-	}
 }
 enum Trit { Zero = 0, One = 1, Two = 2 }
