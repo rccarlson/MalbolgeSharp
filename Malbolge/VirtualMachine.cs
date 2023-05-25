@@ -58,10 +58,10 @@ public class VirtualMachine
 		{
 			var instructionValue = (memory[c] + c) % 94;
 
-			if(hitcount.TryGetValue(instructionValue, out int hits)) hitcount[instructionValue] = hits + 1;
+		if (hitcount.TryGetValue(instructionValue, out int hits)) hitcount[instructionValue] = hits + 1;
 			else hitcount[instructionValue] = 1;
 
-			switch(instructionValue)
+		switch (instructionValue)
 			{
 			case 4: c = memory[d]; MemoryReads++; break; // jmp [d]
 
