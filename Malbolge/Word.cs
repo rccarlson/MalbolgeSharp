@@ -8,25 +8,25 @@ using System.Threading.Tasks;
 namespace Malbolge;
 
 [DebuggerDisplay("{Value, nq}")]
-public class Word
+public struct Word
 {
 	public static Word MaxValue => new Word(new[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 });
 	private const int WordSize = 10;
 	public Word(char c): this((int)c) { }
 	public Word(int i)
 	{
-		Data = new Trit[WordSize];
+		_data = new Trit[WordSize];
 		Value = i;
 	}
 	public Word(Trit[] trits)
 	{
 		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
-		Data = trits;
+		_data = trits;
 	}
 	public Word(int[] trits)
 	{
 		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
-		Data = new Trit[WordSize];
+		_data = new Trit[WordSize];
 		for(int i = 0; i< WordSize; i++)
 		{
 			Data[i] = (Trit)trits[i];
