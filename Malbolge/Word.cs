@@ -18,6 +18,11 @@ public class Word
 		data = new Trit[WordSize];
 		Value = i;
 	}
+	public Word(Trit[] trits)
+	{
+		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
+		data = trits;
+	}
 	public Word(int[] trits)
 	{
 		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
@@ -69,44 +74,44 @@ public class Word
 		}
 	}
 
-	private readonly Trit[] data;
+	internal Trit[] data;
 
-	private static int Crazy(int a, int d)
+	private static Trit Crazy(Trit a, Trit d)
 	{
 		return d switch
 		{
-			0 => a switch
+			Trit.Zero => a switch
 			{
-				0 => 1,
-				1 => 0,
-				2 => 0,
+				Trit.Zero => Trit.One,
+				Trit.One => Trit.Zero,
+				Trit.Two => Trit.Zero,
 				_ => throw new NotImplementedException(a.ToString())
 			},
-			1 => a switch
+			Trit.One => a switch
 			{
-				0 => 1,
-				1 => 0,
-				2 => 2,
+				Trit.Zero => Trit.One,
+				Trit.One => Trit.Zero,
+				Trit.Two => Trit.Two,
 				_ => throw new NotImplementedException(a.ToString())
 			},
-			2 => a switch
+			Trit.Two => a switch
 			{
-				0 => 2,
-				1 => 2,
-				2 => 1,
+				Trit.Zero => Trit.Two,
+				Trit.One => Trit.Two,
+				Trit.Two => Trit.One,
 				_ => throw new NotImplementedException(a.ToString())
 			},
 			_ => throw new NotImplementedException(a.ToString())
 		};
 	}
-	public static Word TritwiseOp(Word a, Word d)
+	public static Trit[] TritwiseOp(Word a, Word d)
 	{
-		var data = new int[WordSize];
+		var data = new Trit[WordSize];
 		for(int i= 0; i < WordSize; i++)
 		{
-			data[i] = Crazy((int)a.data[i], (int)d.data[i]);
+			data[i] = Crazy(a.data[i], d.data[i]);
 		}
-		return new Word(data);
+		return data;
 	}
 
 	public static Word operator +(Word left, Word right) => new Word(left.Value + right.Value);
@@ -119,4 +124,4 @@ public class Word
 	public static implicit operator int(Word word) => word.Value;
 	public static implicit operator Word(int value) => new Word(value);
 }
-enum Trit { Zero = 0, One = 1, Two = 2 }
+public enum Trit { Zero = 0, One = 1, Two = 2 }
