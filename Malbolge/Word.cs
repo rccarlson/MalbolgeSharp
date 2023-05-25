@@ -114,7 +114,7 @@ public struct Word
 	public static Trit[] TritwiseOp(Word a, Word d)
 	{
 		var data = new Trit[WordSize];
-		for(int i= 0; i < WordSize; i++)
+		for (int i = 0; i < WordSize; i++)
 		{
 			data[i] = Crazy(a.Data[i], d.Data[i]);
 		}
