@@ -15,36 +15,36 @@ public class Word
 	public Word(char c): this((int)c) { }
 	public Word(int i)
 	{
-		data = new Trit[WordSize];
+		Data = new Trit[WordSize];
 		Value = i;
 	}
 	public Word(Trit[] trits)
 	{
 		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
-		data = trits;
+		Data = trits;
 	}
 	public Word(int[] trits)
 	{
 		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
-		data = new Trit[WordSize];
+		Data = new Trit[WordSize];
 		for(int i = 0; i< WordSize; i++)
 		{
-			data[i] = (Trit)trits[i];
+			Data[i] = (Trit)trits[i];
 		}
 	}
 
 	public Word Rotr()
 	{
-		var temp = data[0..(WordSize-1)];
-		data[0] = data[WordSize - 1];
-		Array.Copy(temp, 0, data, 1, WordSize - 1);
+		var temp = Data[0..(WordSize-1)];
+		Data[0] = Data[WordSize - 1];
+		Array.Copy(temp, 0, Data, 1, WordSize - 1);
 		return this;
 	}
 	public Word Rotl()
 	{
-		var temp = data[1..WordSize];
-		data[WordSize - 1] = data[0];
-		Array.Copy(temp, 0, data, 0, WordSize - 1);
+		var temp = Data[1..WordSize];
+		Data[WordSize - 1] = Data[0];
+		Array.Copy(temp, 0, Data, 0, WordSize - 1);
 		return this;
 	}
 
@@ -57,7 +57,7 @@ public class Word
 			for(int i = 0; i < WordSize; i++)
 			{
 				var idx = WordSize - 1 - i;
-				cumulative += (int)Math.Pow(3, i) * (int)data[idx];
+				cumulative += (int)Math.Pow(3, i) * (int)Data[idx];
 			}
 			return cumulative;
 		}
@@ -68,13 +68,20 @@ public class Word
 			{
 				var idx = WordSize - 1 - i;
 				var remainder = cumulative % 3;
-				data[idx] = (Trit)remainder;
+				Data[idx] = (Trit)remainder;
 				cumulative /= 3;
 			}
 		}
 	}
 
-	internal Trit[] data;
+	private Trit[] _data;
+	internal Trit[] Data {
+		get => _data;
+		set {
+			if (value.Length != WordSize) throw new ArgumentException($"All data must be of size {WordSize}");
+			_data = value;
+		}
+	}
 
 	private static Trit Crazy(Trit a, Trit d)
 	{
@@ -109,7 +116,7 @@ public class Word
 		var data = new Trit[WordSize];
 		for(int i= 0; i < WordSize; i++)
 		{
-			data[i] = Crazy(a.data[i], d.data[i]);
+			data[i] = Crazy(a.Data[i], d.Data[i]);
 		}
 		return data;
 	}

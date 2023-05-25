@@ -86,7 +86,7 @@ public class VirtualMachine
 				break;
 			case 39: a = memory[d].Rotr(); MemoryReads++; break; // rotr [d]
 			case 40: d = memory[d]; MemoryReads++; break; // mov d, [d]
-			case 62: a.data = memory[d].data = Word.TritwiseOp(a, memory[d]); MemoryReads++; MemoryWrites++; break; // crz
+			case 62: a.Data = memory[d].Data = Word.TritwiseOp(a, memory[d]); MemoryReads++; MemoryWrites++; break; // crz
 			case 68: /* nop */ break;
 			case 81: return false; // end
 			default: /* nop iff not the first instruction */ if (iteration == 0) return false; break;
