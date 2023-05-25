@@ -66,26 +66,26 @@ public class Word
 
 	private Trit[] data = new Trit[WordSize];
 
-	public static Word TritwiseOp(Word a, Word d)
+	private static int Crazy(int a, int d)
 	{
-		var data = a.data.Zip(d.data).Select(tuple =>
+		return d switch
 		{
-			var (a, d) = tuple;
-			return (int)d switch
+			0 => a switch
 			{
-				0 => (int)a switch {
 					0 => 1,
 					1 => 0,
 					2 => 0,
 					_ => throw new NotImplementedException(a.ToString())
 				},
-				1 => (int)a switch {
+			1 => a switch
+			{
 					0 => 1,
 					1 => 0,
 					2 => 2,
 					_ => throw new NotImplementedException(a.ToString())
 				},
-				2 => (int)a switch {
+			2 => a switch
+			{
 					0 => 2,
 					1 => 2,
 					2 => 1,
@@ -93,7 +93,14 @@ public class Word
 				},
 				_ => throw new NotImplementedException(a.ToString())
 			};
-		}).ToArray();
+	}
+	public static Word TritwiseOp(Word a, Word d)
+	{
+		var data = new int[WordSize];
+		for(int i= 0; i < WordSize; i++)
+		{
+			data[i] = Crazy((int)a.data[i], (int)d.data[i]);
+		}
 		return new Word(data);
 	}
 
