@@ -4,15 +4,10 @@ static void PopulateQueue(Queue<char> queue, string str) { foreach (var c in str
 static string SimpleExecute(MalbolgeFlavor flavor, string program)
 {
 	var vm = new VirtualMachine(flavor, program);
-	vm.Execute();
-	var result = new string(vm.OutputQueue.ToArray());
-	Console.WriteLine(result);
-	return result;
+	var report = vm.Execute();
+	Console.WriteLine(report.Result);
+	return report.Result;
 }
-
-
-var a = new Word(256);
-a.Rotl();
 
 var helloWorldProgram = """
 b'BA@?>=<;:987654321r`oo,llH('&%
