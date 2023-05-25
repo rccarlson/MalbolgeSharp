@@ -126,6 +126,15 @@ public struct Word
 	public static Word operator *(Word left, Word right) => new Word(left.Value * right.Value);
 	public static Word operator /(Word left, Word right) => new Word(left.Value / right.Value);
 	public static Word operator %(Word left, Word right) => new Word(left.Value % right.Value);
+	public static bool operator !=(Word left, Word right) => !(left == right);
+	public static bool operator ==(Word left, Word right)
+	{
+		for (int i = 0; i < WordSize; i++)
+		{
+			if (left.Data[i] != right.Data[i]) return false;
+		}
+		return true;
+	}
 	public override string ToString() => $"{Value}";
 
 	public static implicit operator int(Word word) => word.Value;
