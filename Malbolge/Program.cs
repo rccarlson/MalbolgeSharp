@@ -25,9 +25,9 @@ $">~}|{zy7654ts10/o-,+lj(hgfedc!
 <;{j87x543sb0/.-,+*)('&%$#"!b`O{
 zyxZIutsrqSBQ@lkjihgIIdcba`B1j
 """; // http://www2.latech.edu/~acm/helloworld/malbolge.html
-SimpleExecute(MalbolgeFlavor.Implementation, helloWorldProgram);
+VirtualMachine.Execute(MalbolgeFlavor.Implementation, helloWorldProgram);
 
 var helloWorldProgram2 = """
 (=<`#9]~6ZY327Uv4-QsqpMn&+Ij"'E%e{Ab~w=_:]Kw%o44Uqp0/Q?xNvL:`H%c#DD2^WV>gY;dts76qKJImZkj
 """; // https://gist.github.com/kspalaiologos/a1fe6913aaff8edea515b4af385368fe
-SimpleExecute(MalbolgeFlavor.Specification, helloWorldProgram2);
+VirtualMachine.Execute(MalbolgeFlavor.Specification, helloWorldProgram2);

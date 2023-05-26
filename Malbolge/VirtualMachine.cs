@@ -1,22 +1,25 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Malbolge;
 
-public class VirtualMachine
+public static class VirtualMachine
 {
 	private const int MemorySize = 59049;
-
-	public VirtualMachine(MalbolgeFlavor flavor, string program)
+	public static ExecutionReport Execute(MalbolgeFlavor flavor, string program, string input = "", int maxIterations = -1)
 	{
-		this.Flavor = flavor;
-		this.InitialProgram = program;
-		var programAsMemory = program.Where(c => !char.IsWhiteSpace(c)).Select(c => new Word(c)).ToArray();
-		Array.Copy(programAsMemory, memory, programAsMemory.Length);
-		var progLen = programAsMemory.Length;
+		if (program.Length < 2) return new ExecutionReport() { Program = program, ExitReason = ExitReason.InvalidProgram };
+
+		// Construct
+		var memory = ArrayPool<Word>.Shared.Rent(MemorySize);
+		var programAsMemory = program.Where(c => !char.IsWhiteSpace(c)).Select(c => new Word(c)).ToList();
+		Array.Copy(programAsMemory.ToArray(), memory, programAsMemory.Count);
+		var progLen = programAsMemory.Count;
 
 		var first = memory[progLen - 2];
 		var second = memory[progLen - 1];
@@ -35,94 +38,65 @@ public class VirtualMachine
 		}
 		var wordSeqArr = wordSeq.ToArray();
 
-		for (int i = progLen; i < memory.Length; i += wordSeqArr.Length)
+		for (int i = progLen; i < MemorySize; i += wordSeqArr.Length)
 		{
 			var copySize = Math.Min(wordSeqArr.Length, MemorySize - i);
 			Array.Copy(wordSeqArr, 0, memory, i, copySize);
 		}
-	}
 
-	public readonly string InitialProgram;
-	private Word[] memory = new Word[MemorySize];
-	public int HashMemory() => memory.Aggregate(0, (state, word) => HashCode.Combine(state, word.Value));
+		// Run
+		ExitReason? exitReason = null;
+		int iteration = 0;
+		int inputIndex = 0;
+		StringBuilder output = new();
+		int memoryReads = 0,
+			memoryWrites = 0;
+		Word a = new(0),
+			c = new(0),
+			d = new(0);
 
-	/// <summary> accumulator </summary>
-	internal Word a = new(0);
-	/// <summary> code pointer </summary>
-	internal Word c = new(0);
-	/// <summary> data pointer </summary>
-	internal Word d = new(0);
-
-	public Queue<char> InputQueue { get; } = new Queue<char>();
-	public Queue<char> OutputQueue { get; } = new Queue<char>();
-	public int MemoryReads { get; private set; } = 0;
-	public int MemoryWrites { get; private set; } = 0;
-
-	public MalbolgeFlavor Flavor { get; }
-	public int MaxIterations { get; set; } = -1;
-
-	Dictionary<int, int> hitcount = new();
-	int iteration = 0;
-
-	/// <summary>
-	/// Returns true while the program can continue
-	/// </summary>
-	public bool ExecuteSingle()
-	{
-		var instructionValue = (memory[c] + c) % 94;
-
-		if (hitcount.TryGetValue(instructionValue, out int hits)) hitcount[instructionValue] = hits + 1;
-		else hitcount[instructionValue] = 1;
-
-		switch (instructionValue)
+		while (exitReason is null)
 		{
-			case 4: c = memory[d]; MemoryReads++; break; // jmp [d]
+			var instructionValue = (memory[c] + c) % 94;
 
-			case 5 when Flavor is MalbolgeFlavor.Specification:
-			case 23 when Flavor is MalbolgeFlavor.Implementation:
-				OutputQueue.Enqueue((char)(a % 256)); break; // out a
-
-			case 5 when Flavor is MalbolgeFlavor.Implementation:
-			case 23 when Flavor is MalbolgeFlavor.Specification:
-				if (!InputQueue.TryDequeue(out char result))
-				{
-					a = Word.MaxValue; // 59048
-				}
-				else
-				{
-					a = result switch
-					{
-						'\r' or '\n' => 10,
-						_ => result
-					};
-				}
-				break;
-			case 39: a = memory[d].Rotr(); MemoryReads++; break; // rotr [d]
-			case 40: d = memory[d]; MemoryReads++; break; // mov d, [d]
-			case 62: a.Data = memory[d].Data = Word.TritwiseOp(a, memory[d]); MemoryReads++; MemoryWrites++; break; // crz
-			case 68: /* nop */ break;
-			case 81: return false; // end
-			default: /* nop iff not the first instruction */ if (iteration == 0) return false; break;
-		}
-		c = (c.Value + 1) % MemorySize;
-		d = (d.Value + 1) % MemorySize;
-		iteration++;
-		return true;
-	}
-
-	public ExecutionReport Execute()
-	{
-		for(int i=0; MaxIterations < 0 || iteration < MaxIterations; i++)
-		{
-			var single = ExecuteSingle();
-			if (!single)
+			switch (instructionValue)
 			{
-				return new ExecutionReport(this)
-				{
-					RanToCompletion = true,
-					Iterations = iteration,
-				};
+				case 4: c = memory[d]; memoryReads++; break; // jmp [d]
+
+				case 5 when flavor is MalbolgeFlavor.Specification:
+				case 23 when flavor is MalbolgeFlavor.Implementation:
+					output.Append((char)(a % 256)); break; // out a
+
+				case 5 when flavor is MalbolgeFlavor.Implementation:
+				case 23 when flavor is MalbolgeFlavor.Specification:
+					if (inputIndex < input.Length)
+					{
+						var rawInput = input[inputIndex++];
+						a = rawInput switch
+						{
+							'\r' or '\n' => 10,
+							_ => rawInput
+						};
+					}
+					else
+					{
+						a = Word.MaxValue; // 59048
+					}
+					break;
+				case 39: a = memory[d].Rotr(); memoryReads++; break; // rotr [d]
+				case 40: d = memory[d]; memoryReads++; break; // mov d, [d]
+				case 62: a.Data = memory[d].Data = Word.TritwiseOp(a, memory[d]); memoryReads++; memoryWrites++; break; // crz
+				case 68: /* nop */ break;
+				case 81: exitReason = ExitReason.ProgramComplete; break; // end
+				default: /* nop iff not the first instruction */ if (iteration == 0) exitReason = ExitReason.InvalidProgram; break;
 			}
+			c = (c.Value + 1) % MemorySize;
+			d = (d.Value + 1) % MemorySize;
+			iteration++;
+
+			if (maxIterations >= 0 && iteration >= maxIterations)
+				exitReason = ExitReason.MaxIteration;
+
 			//if (i % 1 == 0)
 			//{
 			//	var memHash = HashMemory();
@@ -132,28 +106,40 @@ public class VirtualMachine
 			//	Console.Write($"\riter: {i,-8} memory hash: {HashMemory(),-12} output: {output}");
 			//}
 		}
-		return new ExecutionReport(this)
+
+		// Deconstruct
+		ArrayPool<Word>.Shared.Return(memory);
+
+		return new ExecutionReport()
 		{
-			RanToCompletion = false,
 			Iterations = iteration,
+			MemoryReads = memoryReads,
+			MemoryWrites = memoryWrites,
+			Program = program,
+			ExitReason = exitReason ?? ExitReason.Unknown,
+			Result = output.ToString()
 		};
 	}
 }
 
+public enum ExitReason
+{
+	/// <summary> This is an error state and should not be legitimately reachable </summary>
+	Unknown,
+	ProgramComplete,
+	MaxIteration,
+	InvalidProgram
+}
+
 public struct ExecutionReport
 {
-	public ExecutionReport(VirtualMachine vm)
-	{
-		Result = new string(vm.OutputQueue.ToArray());
-		Program = vm.InitialProgram;
-		MemoryReads = vm.MemoryReads;
-		MemoryWrites = vm.MemoryWrites;
-	}
-	public bool RanToCompletion;
+	public ExitReason ExitReason;
 	public int Iterations;
 	public string Result;
 	public string Program;
 	public int MemoryReads, MemoryWrites;
+
+	public override string ToString() => $"'{Result}' <= '{Program}'";
 }
 
 public enum MalbolgeFlavor
