@@ -57,15 +57,15 @@ public static class VirtualMachine
 
 		while (exitReason is null)
 		{
-			var instructionValue = (memory[c] + c) % 94;
+			var instructionValue = (memory[c.Value] + c).Value % 94;
 
 			switch (instructionValue)
 			{
-				case 4: c = memory[d]; memoryReads++; break; // jmp [d]
+				case 4: c = memory[d.Value]; memoryReads++; break; // jmp [d]
 
 				case 5 when flavor is MalbolgeFlavor.Specification:
 				case 23 when flavor is MalbolgeFlavor.Implementation:
-					output.Append((char)(a % 256)); break; // out a
+					output.Append((char)(a.Value % 256)); break; // out a
 
 				case 5 when flavor is MalbolgeFlavor.Implementation:
 				case 23 when flavor is MalbolgeFlavor.Specification:
@@ -74,8 +74,8 @@ public static class VirtualMachine
 						var rawInput = input[inputIndex++];
 						a = rawInput switch
 						{
-							'\r' or '\n' => 10,
-							_ => rawInput
+							'\r' or '\n' => new Word(10),
+							_ => new Word(rawInput)
 						};
 					}
 					else
@@ -83,15 +83,15 @@ public static class VirtualMachine
 						a = Word.MaxValue; // 59048
 					}
 					break;
-				case 39: a = memory[d].Rotr(); memoryReads++; break; // rotr [d]
-				case 40: d = memory[d]; memoryReads++; break; // mov d, [d]
-				case 62: a.Data = memory[d].Data = Word.TritwiseOp(a, memory[d]); memoryReads++; memoryWrites++; break; // crz
+				case 39: a = memory[d.Value].Rotr(); memoryReads++; break; // rotr [d]
+				case 40: d = memory[d.Value]; memoryReads++; break; // mov d, [d]
+				case 62: a.Data = memory[d.Value].Data = Word.TritwiseOp(a, memory[d.Value]); memoryReads++; memoryWrites++; break; // crz
 				case 68: /* nop */ break;
 				case 81: exitReason = ExitReason.ProgramComplete; break; // end
 				default: /* nop iff not the first instruction */ if (iteration == 0) exitReason = ExitReason.InvalidProgram; break;
 			}
-			c = (c.Value + 1) % MemorySize;
-			d = (d.Value + 1) % MemorySize;
+			c = new Word((c.Value + 1) % MemorySize);
+			d = new Word((d.Value + 1) % MemorySize);
 			iteration++;
 
 			if (maxIterations >= 0 && iteration >= maxIterations)

@@ -167,7 +167,5 @@ public struct Word
 	}
 	public override string ToString() => $"{Value}";
 
-	public static implicit operator int(Word word) => word.Value;
-	public static implicit operator Word(int value) => new Word(value);
 }
 public enum Trit { Zero = 0, One = 1, Two = 2 }
