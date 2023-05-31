@@ -153,11 +153,8 @@ public struct Word
 	public static Word operator *(Word left, Word right) => new Word(left.Value * right.Value);
 	public static Word operator /(Word left, Word right) => new Word(left.Value / right.Value);
 	public static Word operator %(Word left, Word right) => new Word(left.Value % right.Value);
-	public static bool operator !=(Word left, Word right) => !(left == right);
-	public static bool operator ==(Word left, Word right)
-	{
-		return left.Equals(right);
-	}
+	public static bool operator !=(Word left, Word right) => !left.Equals(right);
+	public static bool operator ==(Word left, Word right) => left.Equals(right);
 	public override bool Equals([NotNullWhen(true)] object? obj)
 	{
 		if (obj is not Word word) return false;
