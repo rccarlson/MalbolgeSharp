@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -35,16 +36,11 @@ public struct Word
 
 	public Word Rotr()
 	{
-		var temp = Data[0..(WordSize-1)];
+		var temp = ArrayPool<Trit>.Shared.Rent(WordSize - 1);
+		Array.Copy(Data, temp, WordSize - 1);
 		Data[0] = Data[WordSize - 1];
 		Array.Copy(temp, 0, Data, 1, WordSize - 1);
-		return this;
-	}
-	public Word Rotl()
-	{
-		var temp = Data[1..WordSize];
-		Data[WordSize - 1] = Data[0];
-		Array.Copy(temp, 0, Data, 0, WordSize - 1);
+		ArrayPool<Trit>.Shared.Return(temp);
 		return this;
 	}
 
