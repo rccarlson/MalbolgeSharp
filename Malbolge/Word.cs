@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -155,9 +156,14 @@ public struct Word
 	public static bool operator !=(Word left, Word right) => !(left == right);
 	public static bool operator ==(Word left, Word right)
 	{
+		return left.Equals(right);
+	}
+	public override bool Equals([NotNullWhen(true)] object? obj)
+	{
+		if (obj is not Word word) return false;
 		for (int i = 0; i < WordSize; i++)
 		{
-			if (left.Data[i] != right.Data[i]) return false;
+			if (this.Data[i] != word.Data[i]) return false;
 		}
 		return true;
 	}
