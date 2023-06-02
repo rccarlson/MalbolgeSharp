@@ -21,28 +21,11 @@ public static class VirtualMachine
 		Array.Copy(programAsMemory.ToArray(), memory, programAsMemory.Count);
 		var progLen = programAsMemory.Count;
 
-		var first = memory[progLen - 2];
-		var second = memory[progLen - 1];
-		var third = new Word(Word.TritwiseOp(first, second));
-		var fourth = new Word(Word.TritwiseOp(second, third));
-		var wordSeq = new List<Word>() { third, fourth };
-
-		while (wordSeq.Count < 2 || (
-			first != wordSeq[^2] &&
-			second != wordSeq[^1]
-			))
+		for (int i = progLen; i < maxIterations; i++)
 		{
-			var newTrits = Word.TritwiseOp(wordSeq[^2], wordSeq[^1]);
-			var newWord = new Word(newTrits);
-			wordSeq.Add(newWord);
+			memory[i] = new Word(Word.TritwiseOp(memory[i - 2], memory[i - 1]));
 		}
-		var wordSeqArr = wordSeq.ToArray();
 
-		for (int i = progLen; i < MemorySize; i += wordSeqArr.Length)
-		{
-			var copySize = Math.Min(wordSeqArr.Length, MemorySize - i);
-			Array.Copy(wordSeqArr, 0, memory, i, copySize);
-		}
 
 		// Run
 		ExitReason? exitReason = null;
