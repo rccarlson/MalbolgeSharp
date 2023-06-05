@@ -9,95 +9,73 @@ using System.Threading.Tasks;
 
 namespace Malbolge;
 
-[DebuggerDisplay("{Value, nq}")]
-public struct Word
+internal static class Word
 {
-	public static Word MaxValue => new Word(new[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 });
-	private const int WordSize = 10;
-	public Word(char c): this((int)c) { }
-	public Word(int i)
+	public const int WordSize = 10;
+	public const int MaxValue = 59048;
+
+	public static int ReadInt(Span<Trit> data)
 	{
-		_data = new Trit[WordSize];
-		Value = i;
-	}
-	public Word(Trit[] trits)
-	{
-		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
-		_data = trits;
-	}
-	public Word(int[] trits)
-	{
-		if (trits.Length != WordSize) throw new ArgumentException($"Words must be of length {WordSize}");
-		_data = new Trit[WordSize];
-		for(int i = 0; i< WordSize; i++)
+		int cumulative = 0;
+
+		for (int i = 0; i < WordSize; i++)
 		{
-			Data[i] = (Trit)trits[i];
+			var idx = WordSize - 1 - i;
+			cumulative += Pow3(i) * (int)data[idx];
 		}
-	}
+		return cumulative;
 
-	public Word Rotr()
-	{
-		var temp = ArrayPool<Trit>.Shared.Rent(WordSize - 1);
-		Array.Copy(Data, temp, WordSize - 1);
-		Data[0] = Data[WordSize - 1];
-		Array.Copy(temp, 0, Data, 1, WordSize - 1);
-		ArrayPool<Trit>.Shared.Return(temp);
-		return this;
-	}
-
-	public int Value
-	{
-		get
-		{
-			/// Raise 3 to the specified power
-			static int Pow3(int power) =>
-				power switch
-				{
-					0 => 1,
-					1 => 3,
-					2 => 9,
-					3 => 27,
-					4 => 81,
-					5 => 243,
-					6 => 729,
-					7 => 2187,
-					8 => 6561,
-					9 => 19683,
-					_ => Pow3(9) * Pow3(power - 9)
-				};
-
-			int cumulative = 0;
-
-			for(int i = 0; i < WordSize; i++)
+		/// Raise 3 to the specified power
+		static int Pow3(int power) =>
+			power switch
 			{
-				var idx = WordSize - 1 - i;
-				cumulative += Pow3(i) * (int)Data[idx];
-			}
-			return cumulative;
-		}
-		set
+				0 => 1,
+				1 => 3,
+				2 => 9,
+				3 => 27,
+				4 => 81,
+				5 => 243,
+				6 => 729,
+				7 => 2187,
+				8 => 6561,
+				9 => 19683,
+				_ => Pow3(9) * Pow3(power - 9)
+			};
+	}
+
+	public static void WriteInt(Span<Trit> data, int value)
+	{
+		var cumulative = value;
+		for (int idx = WordSize - 1; idx >= 0; idx--)
 		{
-			var cumulative = value;
-			for(int i = 0; i < WordSize; i++)
-			{
-				var idx = WordSize - 1 - i;
-				var remainder = cumulative % 3;
-				Data[idx] = (Trit)remainder;
-				cumulative /= 3;
-			}
+			var remainder = cumulative % 3;
+			data[idx] = (Trit)remainder;
+			cumulative /= 3;
 		}
 	}
 
-	private Trit[] _data;
-	internal Trit[] Data {
-		get => _data;
-		set {
-			if (value.Length != WordSize) throw new ArgumentException($"All data must be of size {WordSize}");
-			_data = value;
+	public static void Add(Span<Trit> addend1, Span<Trit> addend2, Span<Trit> writeLocation)
+	{
+		int carry = 0;
+		for (int i = 0; i < WordSize; i++)
+		{
+			var idx = WordSize - 1 - i;
+			var sum = (int)addend1[idx] + (int)addend2[idx] + carry;
+			writeLocation[idx] = (Trit)(sum % 3);
+			carry = sum / 3;
 		}
 	}
 
-	private static Trit Crazy(Trit a, Trit d)
+	public static bool Equals(Span<Trit> a, Span<Trit> b)
+	{
+		for (int i = 0; i < WordSize; i++)
+		{
+			if (a[i] != b[i]) return false;
+		}
+		return true;
+	}
+
+	public static Trit Crazy(Trit a, Trit d)
 	{
 		return d switch
 		{
@@ -125,46 +103,39 @@ public struct Word
 			_ => throw new NotImplementedException(a.ToString())
 		};
 	}
-	public static Trit[] TritwiseOp(Word a, Word d)
+	public static void Crazy(Span<Trit> a, Span<Trit> d, Span<Trit> destination)
 	{
-		var data = new Trit[WordSize];
 		for (int i = 0; i < WordSize; i++)
 		{
-			data[i] = Crazy(a.Data[i], d.Data[i]);
+			destination[i] = Crazy(a[i], d[i]);
 		}
-		return data;
+	}
+	public static int Crazy(int a, int d)
+	{
+		Span<Trit> aSpan = stackalloc Trit[WordSize];
+		Span<Trit> dSpan = stackalloc Trit[WordSize];
+		Span<Trit> result = stackalloc Trit[WordSize];
+		WriteInt(aSpan, a);
+		WriteInt(dSpan, d);
+		Crazy(aSpan, dSpan, result);
+		return ReadInt(result);
+	}
+	public static int Rotr(int value)
+	{
+		return (value % 3) switch
+		{
+			0 => value / 3,
+			1 => value / 3 + 19683, // 1/3 of 59049
+			2 => value / 3 + 39366, // 2/3 of 59049
+			_ => throw new NotImplementedException()
+		};
 	}
 
-	public static Word operator +(Word left, Word right)
+	public static void Rotr(Span<Trit> span)
 	{
-		int carry = 0;
-		var newData = new Trit[WordSize];
-		for (int i = 0; i < WordSize; i++)
-		{
-			var idx = WordSize - 1 - i;
-			var sum = (int)left.Data[idx] + (int)right.Data[idx] + carry;
-			newData[idx] = (Trit)(sum % 3);
-			carry = sum / 3;
-		}
-		var result = new Word(newData);
-		return result;
+		Trit temp = span[WordSize - 1];
+		span[..(WordSize - 1)].CopyTo(span[1..]);
+		span[0] = temp;
 	}
-	public static Word operator -(Word left, Word right) => new Word(left.Value - right.Value);
-	public static Word operator *(Word left, Word right) => new Word(left.Value * right.Value);
-	public static Word operator /(Word left, Word right) => new Word(left.Value / right.Value);
-	public static Word operator %(Word left, Word right) => new Word(left.Value % right.Value);
-	public static bool operator !=(Word left, Word right) => !left.Equals(right);
-	public static bool operator ==(Word left, Word right) => left.Equals(right);
-	public override bool Equals([NotNullWhen(true)] object? obj)
-	{
-		if (obj is not Word word) return false;
-		for (int i = 0; i < WordSize; i++)
-		{
-			if (this.Data[i] != word.Data[i]) return false;
-		}
-		return true;
-	}
-	public override string ToString() => $"{Value}";
-
 }
 public enum Trit { Zero = 0, One = 1, Two = 2 }
