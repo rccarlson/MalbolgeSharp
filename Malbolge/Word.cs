@@ -103,6 +103,31 @@ internal static class Word
 			_ => throw new NotImplementedException(a.ToString())
 		};
 	}
+
+	/// <summary>
+	///  
+	/// </summary>
+	/// <remarks> Direct adaptation from original C implementation </remarks>
+	public static int Crazy2(int x, int y)
+	{
+		int i = 0;
+		for (int j = 0; j < 5; j++)
+			i += o[y / p9[j] % 9][x / p9[j] % 9] * p9[j];
+		return i;
+	}
+	private static readonly int[] p9 = new[] { 1, 9, 81, 729, 6561 };
+	private static readonly int[][] o = new[]{
+			new[]{ 4, 3, 3, 1, 0, 0, 1, 0, 0 },
+			new[]{ 4, 3, 5, 1, 0, 2, 1, 0, 2 },
+			new[]{ 5, 5, 4, 2, 2, 1, 2, 2, 1 },
+			new[]{ 4, 3, 3, 1, 0, 0, 7, 6, 6 },
+			new[]{ 4, 3, 5, 1, 0, 2, 7, 6, 8 },
+			new[]{ 5, 5, 4, 2, 2, 1, 8, 8, 7 },
+			new[]{ 7, 6, 6, 7, 6, 6, 4, 3, 3 },
+			new[]{ 7, 6, 8, 7, 6, 8, 4, 3, 5 },
+			new[]{ 8, 8, 7, 8, 8, 7, 5, 5, 4 },
+		};
+
 	public static void Crazy(Span<Trit> a, Span<Trit> d, Span<Trit> destination)
 	{
 		for (int i = 0; i < WordSize; i++)
