@@ -14,7 +14,6 @@ public static class VirtualMachine
 
 	public static ExecutionReport Execute(MalbolgeFlavor flavor, string program, string input = "", int maxIterations = -1)
 	{
-		if (program.Length < 2) return new ExecutionReport() { ExitReason = ExitReason.InvalidProgram, Program = program };
 
 		var memory = ArrayPool<int>.Shared.Rent(MemorySize);
 
@@ -25,10 +24,12 @@ public static class VirtualMachine
 			char x = program[i];
 			if (char.IsWhiteSpace(x)) continue;
 			if (IsGraphicalAscii(x))
-				if (xlat1[(x - 33 + progLen) % 94] is not ('j' or 'i' or '*' or 'p' or '<' or '/' or 'v' or 'o'))
+				if(!CharIsAllowed(x, progLen))
 					goto error;
 			memory[progLen++] = x;
 		}
+
+		if (progLen < 2) return new ExecutionReport() { ExitReason = ExitReason.InvalidProgram, Program = program };
 		WriteRepeatingCrazyNumbers(memory[progLen - 2], memory[progLen - 1], memory.AsSpan()[progLen..MemorySize]);
 
 		// Run
@@ -156,12 +157,26 @@ public static class VirtualMachine
 			char x = program[i];
 			if (char.IsWhiteSpace(x)) continue;
 			if (IsGraphicalAscii(x))
-				if (xlat1[(x - 33 + pointer) % 94] is not ('j' or 'i' or '*' or 'p' or '<' or '/' or 'v' or 'o'))
+				if (AllowableInstructions.Contains(xlat1[(x - 33 + pointer) % 94]))
 					throw new ArgumentException($"Invalid character in source file");
 			memory[pointer++] = x;
 		}
 		return pointer;
 	}
+	public static bool CharIsAllowed(char x, int memoryIndex) => AllowableInstructions.Contains(xlat1[(x - 33 + memoryIndex) % 94]);
+	public static IEnumerable<char> GetAllowableChars(int memoryIndex)
+	{
+		for(int i = 0; i <= 256; i++)
+		{
+			char c = (char)i;
+			if (IsGraphicalAscii(c))
+				if (!CharIsAllowed(c, memoryIndex))
+					continue;
+			if (!IsGraphicalAscii(c % 256)) continue;
+			yield return c;
+		}
+	}
+	public const string AllowableInstructions = "ji*p</vo";
 
 	private static bool IsGraphicalAscii(int c) => c is >= 33 and <= 126;
 
