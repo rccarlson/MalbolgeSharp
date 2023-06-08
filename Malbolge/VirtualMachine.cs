@@ -183,7 +183,7 @@ public struct ExecutionReport
 	public string Program;
 	public int MemoryReads, MemoryWrites;
 
-	public override string ToString() => $"'{Result}' <= '{Program}'";
+	public override string ToString() => $"'{Result.Replace("\0","")}' <= '{Program}'";
 }
 
 public enum MalbolgeFlavor
