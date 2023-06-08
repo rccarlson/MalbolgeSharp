@@ -1,7 +1,4 @@
 ﻿using Malbolge;
-static void PrintQueue(Queue<char> queue) { while (queue.TryDequeue(out var output)) { Console.Write(output); } Console.WriteLine(); }
-static void PopulateQueue(Queue<char> queue, string str) { foreach (var c in str) queue.Enqueue(c); }
-
 static double Profile(int iterations, Action action)
 {
 	var sw = System.Diagnostics.Stopwatch.StartNew();
