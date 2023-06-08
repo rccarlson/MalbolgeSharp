@@ -1,8 +1,7 @@
 # MalbolgeSharp
 
-A basic implementation of Malbolge in C#.
+A basic lightweight implementation of Malbolge in C#.
 
-Malbolge is designed to be as impenetrable as possible, so there are many quirks to the language that must be accounted for. When using the library, you will note that a `MalbolgeFlavor` is required. This is because the Malbolge specs are NOT the same as the Malbolge program. According to the author, Ben Olmstead, this is intentional and he enjoys our suffering (some interpretive liberties may have been taken the latter half of that). Therefore, you must specify whether the program is to follow the rules of the spec or the Malbolge compiler implementation.
+This is more or less a re-implementation of [the original Malbolge interpreter](http://esoteric.sange.fi/orphaned/malbolge/malbolge.c). Malbolge is intentionally obtuse and nigh impossible to work with. During my research I have seen several variations. I try to support this variation by incorporating different `MalbolgeFlavor` options, but usually it's too difficult to find what aspect was changed or done incorrectly. Because of this, you may find that some Malbolge programs on the internet do not work with this implementation. I have minimized this to the best of my abilities.
 
-This implementation is based on the [Wikipedia](https://en.wikipedia.org/wiki/Malbolge) and [Elsolang](https://esolangs.org/wiki/Malbolge) articles on Malbolge, rather than the [original specs](http://www.lscheffer.com/malbolge_spec.html) simply because it was easier that way. The original specs are quite painful to pick apart and honestly, I couldn't be bothered.
-
+This implementation seeks to be as fast and lightweight as possible, and uses minimal allocations to keep pressure off the garbage collector. It is not zero allocation, as large arrays are more performant for these applications, but they are recycled via an `ArrayPool`.
