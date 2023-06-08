@@ -164,6 +164,36 @@ public static class VirtualMachine
 	}
 
 	private static bool IsGraphicalAscii(int c) => c is >= 33 and <= 126;
+
+	public static string Normalize(string program)
+	{
+		var sb = new StringBuilder(program.Length);
+		int memoryIndex = 0;
+		for(int i=0; i<program.Length; i++)
+		{
+			char x = program[i];
+			if (char.IsWhiteSpace(x)) continue;
+			char c = xlat1[(x - 33 + memoryIndex) % 94];
+			sb.Append(c);
+			memoryIndex++;
+		}
+		var result = sb.ToString();
+		return result;
+	}
+	public static string Denormalize(string program)
+	{
+		var sb = new StringBuilder(program.Length);
+		for(int memoryIndex = 0; memoryIndex < program.Length; memoryIndex++)
+		{
+			char c = program[memoryIndex];
+			var idx = xlat1.IndexOf(c);
+			int xAscii = idx - memoryIndex + 33;
+			if (xAscii < 32) xAscii += 94;
+			sb.Append((char)xAscii);
+		}
+		var result = sb.ToString();
+		return result;
+	}
 }
 
 public enum ExitReason
